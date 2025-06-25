@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Navigation from "@/components/navigation"
 import Footer from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -114,11 +114,16 @@ export default function HomePage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
   const [currentNews, setCurrentNews] = useState(0)
+  const urgentRef = useRef<HTMLDivElement>(null)
+  const urgentSectionRef = useRef<HTMLElement>(null)
+  const [isUrgentVisible, setIsUrgentVisible] = useState(false)
 
   const familiesReached = useCounter(3000, 3000)
   const villagesImpacted = useCounter(150, 2500)
   const volunteersActive = useCounter(500, 2000)
   const projectsCompleted = useCounter(75, 2800)
+
+  const statsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setIsVisible(true)
@@ -133,11 +138,54 @@ export default function HomePage() {
       setCurrentNews((prev) => (prev + 1) % newsUpdates.length)
     }, 4000)
 
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+    if (statsRef.current) observer.observe(statsRef.current)
+
+    // Urgent section intersection observer
+    let urgentObserver: IntersectionObserver | null = null
+    if (urgentSectionRef.current) {
+      urgentObserver = new window.IntersectionObserver(
+        (entries) => {
+          setIsUrgentVisible(entries[0].isIntersecting)
+        },
+        { threshold: 0.3 }
+      )
+      urgentObserver.observe(urgentSectionRef.current)
+    }
+
     return () => {
       clearInterval(testimonialInterval)
       clearInterval(newsInterval)
+      observer.disconnect()
+      urgentObserver && urgentObserver.disconnect()
     }
   }, [])
+
+  useEffect(() => {
+    // Auto-scroll logic for mobile carousel, only when urgent section is visible
+    let interval: NodeJS.Timeout | undefined
+    if (isUrgentVisible && urgentRef.current) {
+      let index = 0
+      interval = setInterval(() => {
+        if (!urgentRef.current) return
+        const cards = urgentRef.current.querySelectorAll(".urgent-card")
+        index = (index + 1) % cards.length
+        const card = cards[index] as HTMLElement
+        card?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" })
+      }, 3500)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isUrgentVisible])
 
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
@@ -194,7 +242,7 @@ export default function HomePage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
               <div className="watercolor-card p-6 rounded-2xl text-center">
                 <div className="text-3xl font-bold serif-title text-yellow-600 mb-2">3K+</div>
                 <p className="sans-body text-gray-600 text-sm">Families Reached</p>
@@ -211,12 +259,12 @@ export default function HomePage() {
                 <div className="text-3xl font-bold serif-title text-orange-600 mb-2">75+</div>
                 <p className="sans-body text-gray-600 text-sm">Projects Completed</p>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Floating elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-yellow-200 rounded-full opacity-30 floating"></div>
+        {/* <div className="absolute top-20 left-10 w-20 h-20 bg-yellow-200 rounded-full opacity-30 floating"></div>
         <div
           className="absolute bottom-20 right-10 w-16 h-16 bg-purple-200 rounded-full opacity-30 floating"
           style={{ animationDelay: "1s" }}
@@ -224,19 +272,22 @@ export default function HomePage() {
         <div
           className="absolute top-1/2 left-20 w-12 h-12 bg-blue-200 rounded-full opacity-30 floating"
           style={{ animationDelay: "2s" }}
-        ></div>
+        ></div> */}
       </section>
 
       {/* Urgent Appeals Section */}
-      <section className="py-20 bg-gradient-to-r from-red-50 to-orange-50 border-t-4 border-orange-400">
+      <section ref={urgentSectionRef} className="py-20 border-t-4">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="serif-title text-4xl md:text-5xl font-bold text-gray-800 mb-4">Urgent Appeals</h2>
             <p className="sans-body text-xl text-gray-600">Communities that need immediate support</p>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="watercolor-card border-0 overflow-hidden">
+          <div
+            ref={urgentRef}
+            className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+          >
+            {/* Card 1 */}
+            <Card className="urgent-card min-w-[85vw] max-w-xs md:min-w-0 md:max-w-none watercolor-card border-0 overflow-hidden h-full flex flex-col snap-center">
               <div className="relative">
                 <img
                   src="/placeholder.svg?height=200&width=400"
@@ -247,7 +298,7 @@ export default function HomePage() {
                   URGENT
                 </div>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-6 flex-1 flex flex-col">
                 <h3 className="serif-title text-2xl font-semibold text-gray-800 mb-3">Flood Relief - Malkangiri</h3>
                 <p className="sans-body text-gray-600 mb-4">
                   Recent floods have displaced 500+ tribal families. They need immediate shelter, food, and medical aid.
@@ -259,11 +310,14 @@ export default function HomePage() {
                   </div>
                   <Progress value={57} className="h-2" />
                 </div>
-                <Button className="w-full glow-button text-white">Donate for Relief</Button>
+                <div className="mt-auto">
+                  <Button className="w-full glow-button text-white">Donate for Relief</Button>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="watercolor-card border-0 overflow-hidden">
+            {/* Card 2 */}
+            <Card className="urgent-card min-w-[85vw] max-w-xs md:min-w-0 md:max-w-none watercolor-card border-0 overflow-hidden h-full flex flex-col snap-center">
               <div className="relative">
                 <img
                   src="/placeholder.svg?height=200&width=400"
@@ -274,7 +328,7 @@ export default function HomePage() {
                   CRITICAL
                 </div>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-6 flex-1 flex flex-col">
                 <h3 className="serif-title text-2xl font-semibold text-gray-800 mb-3">Medical Emergency Fund</h3>
                 <p className="sans-body text-gray-600 mb-4">
                   Tribal children suffering from malnutrition need immediate medical intervention and nutritional
@@ -287,11 +341,14 @@ export default function HomePage() {
                   </div>
                   <Progress value={40} className="h-2" />
                 </div>
-                <Button className="w-full glow-button text-white">Save Lives Now</Button>
+                <div className="mt-auto">
+                  <Button className="w-full glow-button text-white">Save Lives Now</Button>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="watercolor-card border-0 overflow-hidden">
+            {/* Card 3 */}
+            <Card className="urgent-card min-w-[85vw] max-w-xs md:min-w-0 md:max-w-none watercolor-card border-0 overflow-hidden h-full flex flex-col snap-center">
               <div className="relative">
                 <img
                   src="/placeholder.svg?height=200&width=400"
@@ -302,7 +359,7 @@ export default function HomePage() {
                   URGENT
                 </div>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-6 flex-1 flex flex-col">
                 <h3 className="serif-title text-2xl font-semibold text-gray-800 mb-3">School Reconstruction</h3>
                 <p className="sans-body text-gray-600 mb-4">
                   Cyclone damaged the only school in Koraput village. 200+ children have no place to study.
@@ -314,7 +371,9 @@ export default function HomePage() {
                   </div>
                   <Progress value={57} className="h-2" />
                 </div>
-                <Button className="w-full glow-button text-white">Rebuild Hope</Button>
+                <div className="mt-auto">
+                  <Button className="w-full glow-button text-white">Rebuild Hope</Button>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -322,7 +381,7 @@ export default function HomePage() {
       </section>
 
       {/* Statistics Section */}
-      <section className="py-20 bg-white/50 backdrop-blur-sm">
+      <section ref={statsRef} className="py-20 bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="serif-title text-4xl md:text-5xl font-bold text-gray-800 mb-4">Our Impact in Numbers</h2>
@@ -636,66 +695,42 @@ export default function HomePage() {
       </section>
 
       {/* Impact Visualization */}
-      <section className="py-20 watercolor-bg">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="serif-title text-4xl md:text-5xl font-bold text-gray-800 mb-4">Our Reach & Impact</h2>
-            <p className="sans-body text-xl text-gray-600">Expanding impact across tribal regions</p>
+      <section className="py-16 sm:py-20 watercolor-bg">
+        <div className="container mx-auto px-2 sm:px-4">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="serif-title text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+              Our Reach & Impact
+            </h2>
+            <p className="sans-body text-lg sm:text-xl text-gray-600">
+              Expanding impact across tribal regions
+            </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="watercolor-card p-8 rounded-2xl">
-              <h3 className="serif-title text-3xl font-semibold text-gray-800 mb-8">Families Reached by State</h3>
-              <div className="h-80">
-                <ChartContainer config={{}} className="w-full h-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reachData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                      <XAxis dataKey="state" />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="families" fill="#FFD700" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <div className="watercolor-card p-8 rounded-2xl">
-                <div className="flex items-start space-x-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="serif-title text-2xl font-semibold text-gray-800 mb-3">Geographic Focus</h4>
-                    <p className="sans-body text-gray-600 leading-relaxed">
-                      Our primary focus areas include the tribal belts of Odisha, Jharkhand, Chhattisgarh, and West
-                      Bengal, where we work closely with indigenous communities to preserve their culture while enabling
-                      progress.
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-12">
+            {/* Row 1 */}
+            <div className="flex flex-col lg:flex-row gap-3 sm:gap-6 lg:gap-12 col-span-1 lg:col-span-2">
+              <div className="watercolor-card p-4 sm:p-8 rounded-2xl flex-1 min-w-0 mb-4 lg:mb-0">
+                <h3 className="serif-title text-2xl sm:text-3xl font-semibold text-gray-800 mb-6 sm:mb-8">
+                  Families Reached by State
+                </h3>
+                <div className="h-48 sm:h-64 md:h-80 w-full overflow-x-auto">
+                  <ChartContainer config={{}} className="w-full h-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={reachData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <XAxis dataKey="state" />
+                        <YAxis />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Bar dataKey="families" fill="#FFD700" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
                 </div>
               </div>
-
-              <div className="watercolor-card p-8 rounded-2xl">
-                <div className="flex items-start space-x-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Users className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="serif-title text-2xl font-semibold text-gray-800 mb-3">Community Partnership</h4>
-                    <p className="sans-body text-gray-600 leading-relaxed">
-                      We believe in working with communities, not for them. Every project begins with extensive
-                      consultation and is designed to respect traditional knowledge while introducing sustainable
-                      innovations.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="watercolor-card p-8 rounded-2xl">
-                <h4 className="serif-title text-2xl font-semibold text-gray-800 mb-6 text-center">Fund Allocation</h4>
-                <div className="w-48 h-48 mx-auto">
+              <div className="watercolor-card p-4 sm:p-8 rounded-2xl flex-1 min-w-0">
+                <h4 className="serif-title text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 text-center">
+                  Fund Allocation
+                </h4>
+                <div className="w-32 h-32 sm:w-48 sm:h-48 mx-auto">
                   <ChartContainer config={{}} className="w-full h-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -703,8 +738,8 @@ export default function HomePage() {
                           data={donationData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={60}
-                          outerRadius={90}
+                          innerRadius={40}
+                          outerRadius={70}
                           paddingAngle={5}
                           dataKey="value"
                         >
@@ -717,15 +752,48 @@ export default function HomePage() {
                     </ResponsiveContainer>
                   </ChartContainer>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4 mt-4 sm:mt-6">
                   {donationData.map((item, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
-                      <span className="sans-body text-sm text-gray-600">
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
+                      <span className="sans-body text-xs sm:text-sm text-gray-600">
                         {item.name} ({item.value}%)
                       </span>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+            {/* Row 2 */}
+            <div className="flex flex-col lg:flex-row gap-3 sm:gap-6 lg:gap-12 col-span-1 lg:col-span-2">
+              <div className="watercolor-card p-4 sm:p-8 rounded-2xl flex-1 min-w-0 mb-0 lg:mb-0">
+                <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="serif-title text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-3">
+                      Geographic Focus
+                    </h4>
+                    <p className="sans-body text-gray-600 leading-relaxed text-sm sm:text-base">
+                      Our primary focus areas include the tribal belts of Odisha, Jharkhand, Chhattisgarh, and West Bengal, where we work closely with indigenous communities to preserve their culture while enabling progress.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="watercolor-card p-4 sm:p-8 rounded-2xl flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Users className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="serif-title text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-3">
+                      Community Partnership
+                    </h4>
+                    <p className="sans-body text-gray-600 leading-relaxed text-sm sm:text-base">
+                      We believe in working with communities, not for them. Every project begins with extensive consultation and is designed to respect traditional knowledge while introducing sustainable innovations.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
