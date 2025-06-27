@@ -117,6 +117,9 @@ export default function HomePage() {
   const urgentRef = useRef<HTMLDivElement>(null)
   const urgentSectionRef = useRef<HTMLElement>(null)
   const [isUrgentVisible, setIsUrgentVisible] = useState(false)
+  const programsRef = useRef<HTMLDivElement>(null)
+  const programsSectionRef = useRef<HTMLElement>(null)
+  const [isProgramsVisible, setIsProgramsVisible] = useState(false)
 
   const familiesReached = useCounter(3000, 3000)
   const villagesImpacted = useCounter(150, 2500)
@@ -186,6 +189,39 @@ export default function HomePage() {
       if (interval) clearInterval(interval)
     }
   }, [isUrgentVisible])
+
+  useEffect(() => {
+    // Intersection observer for programs section
+    let observer: IntersectionObserver | null = null
+    if (programsSectionRef.current) {
+      observer = new window.IntersectionObserver(
+        (entries) => {
+          setIsProgramsVisible(entries[0].isIntersecting)
+        },
+        { threshold: 0.3 }
+      )
+      observer.observe(programsSectionRef.current)
+    }
+    return () => {
+      if (observer) observer.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    // Auto-scroll logic for mobile carousel, only when section is visible
+    let interval: NodeJS.Timeout | undefined
+    if (isProgramsVisible && programsRef.current) {
+      let index = 0
+      interval = setInterval(() => {
+        if (!programsRef.current) return
+        const cards = programsRef.current.querySelectorAll(".program-card")
+        index = (index + 1) % cards.length
+        const card = cards[index] as HTMLElement
+        card?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" })
+      }, 3500)
+    }
+    return () => interval && clearInterval(interval)
+  }, [isProgramsVisible])
 
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
@@ -426,7 +462,7 @@ export default function HomePage() {
       </section>
 
       {/* Programs Section */}
-      <section className="py-20 watercolor-bg">
+      <section ref={programsSectionRef} className="py-20 watercolor-bg">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="serif-title text-4xl md:text-5xl font-bold text-gray-800 mb-4">Our Programs</h2>
@@ -435,7 +471,10 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div
+            ref={programsRef}
+            className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+          >
             {[
               {
                 icon: GraduationCap,
@@ -472,10 +511,10 @@ export default function HomePage() {
             ].map((program, index) => (
               <Card
                 key={index}
-                className={`watercolor-card border-0 overflow-hidden group cursor-pointer ${isVisible ? "fade-in" : ""}`}
+                className={`program-card min-w-[85vw] max-w-xs md:min-w-0 md:max-w-none watercolor-card border-0 overflow-hidden group cursor-pointer ${isVisible ? "fade-in" : ""} snap-center`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <CardContent className="p-8 text-center">
+                <CardContent className="p-8 text-center flex flex-col h-full">
                   <div
                     className={`w-20 h-20 bg-gradient-to-br ${program.bgColor} rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300`}
                   >
@@ -484,12 +523,14 @@ export default function HomePage() {
                   <h3 className="serif-title text-2xl font-semibold text-gray-800 mb-4">{program.title}</h3>
                   <p className="sans-body text-gray-600 leading-relaxed mb-4">{program.desc}</p>
                   <div className="text-sm font-semibold text-gray-500 mb-4">{program.stats}</div>
-                  <Link href={`/programs#${program.title.toLowerCase()}`}>
-                    <Button variant="outline" className="group-hover:bg-yellow-50 group-hover:border-yellow-300">
-                      Learn More
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <div className="mt-auto">
+                    <Link href={`/programs#${program.title.toLowerCase()}`}>
+                      <Button variant="outline" className="group-hover:bg-yellow-50 group-hover:border-yellow-300">
+                        Learn More
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -709,7 +750,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-12">
             {/* Row 1 */}
             <div className="flex flex-col lg:flex-row gap-3 sm:gap-6 lg:gap-12 col-span-1 lg:col-span-2">
-              <div className="watercolor-card p-4 sm:p-8 rounded-2xl flex-1 min-w-0 mb-4 lg:mb-0">
+              <div className="watercolor-card p-4 sm:p-8 rounded-2xl flex-1 min-w-0 lg:mb-0">
                 <h3 className="serif-title text-2xl sm:text-3xl font-semibold text-gray-800 mb-6 sm:mb-8">
                   Families Reached by State
                 </h3>
