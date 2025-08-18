@@ -5,6 +5,8 @@ import Navigation from "@/components/navigation"
 import Footer from "@/components/footer"
 import { AnimatedCounter } from "@/components/animated-counter"
 import { ParallaxSection } from "@/components/parallax-section"
+import kuviyalImage from "./components/images/kuviyal-image.jpg"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -276,11 +278,17 @@ export default function HomePage() {
           <div className="container mx-auto px-4 text-center text-white">
             <div className={`max-w-4xl mx-auto ${isVisible ? "fade-in" : ""}`}>
               {/* Logo */}
-              <div className="mb-8 flex justify-center">
-                <div className="w-32 h-32 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl floating pulse-glow">
-                  <Droplets className="w-16 h-16 text-white" />
-                </div>
-              </div>
+  <Image
+    src={kuviyalImage}
+    alt="Kuviyal Foundation Logo"
+    width={160}
+    height={160}
+    className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl floating pulse-glow"
+    priority
+  />
+  /* Logo */
+{/* </div> */}
+
 
               <h1 className="serif-title text-6xl md:text-8xl font-bold mb-6 leading-tight">
                 {heroSlides[currentSlide].title}
