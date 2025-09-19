@@ -103,13 +103,63 @@ export default function DonatePage() {
     setIsVisible(true)
   }, [])
 
-  const finalAmount = selectedAmount || Number.parseInt(customAmount) || 0
+  const finalAmount = selectedAmount || (customAmount ? Number.parseInt(customAmount) : 0) || 0
   const selectedCampaignData = campaigns.find((c) => c.id === selectedCampaign)
 
-  const handleDonate = () => {
+  const handleDonate = async () => {
     if (finalAmount > 0 && agreedToTerms) {
-      // Here you would integrate with payment gateway
-      alert(`Processing donation of ₹${finalAmount} for ${selectedCampaignData?.title}`)
+      const donationRecord = {
+        donor: isAnonymous ? "Anonymous" : donorInfo.name || "Anonymous",
+        amount: finalAmount,
+        date: new Date().toISOString().slice(0, 10),
+        email: donorInfo.email,
+        phone: donorInfo.phone,
+        address: donorInfo.address,
+        panCard: donorInfo.panCard,
+        message: donorInfo.message,
+        campaign: selectedCampaignData?.title,
+        type: donationType,
+      }
+
+      try {
+        const response = await fetch("/api/donations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(donationRecord),
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          alert(`Thank you! Your donation of ₹${finalAmount} for ${selectedCampaignData?.title} has been recorded successfully. Donation ID: ${result.id}`)
+
+          // Reset form after successful donation
+          setSelectedAmount(null)
+          setCustomAmount("")
+          setDonorInfo({
+            name: "",
+            email: "",
+            phone: "",
+            address: "",
+            panCard: "",
+            message: "",
+          })
+          setIsAnonymous(false)
+          setAgreedToTerms(false)
+        } else {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+          console.error('API Error:', errorData)
+          alert(`Failed to save donation: ${errorData.error || 'Unknown error'}`)
+        }
+      } catch (err) {
+        console.error('Donation error:', err)
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          alert("Network error: Please check your internet connection and try again.")
+        } else {
+          alert("Failed to save donation. Please try again.")
+        }
+      }
+    } else {
+      alert("Please select an amount and agree to the terms.")
     }
   }
 
@@ -296,7 +346,7 @@ export default function DonatePage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center space-x-2 mb-4">
-                      <Checkbox id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
+                      <Checkbox id="anonymous" checked={isAnonymous} onCheckedChange={(checked) => setIsAnonymous(checked === true)} />
                       <Label htmlFor="anonymous" className="sans-body text-sm">
                         Make this donation anonymous
                       </Label>
@@ -375,7 +425,7 @@ export default function DonatePage() {
                     )}
 
                     <div className="flex items-start space-x-2 pt-4">
-                      <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={setAgreedToTerms} />
+                      <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(checked) => setAgreedToTerms(checked === true)} />
                       <Label htmlFor="terms" className="sans-body text-sm leading-relaxed">
                         I agree to the{" "}
                         <a href="/terms" className="text-blue-600 hover:underline">
