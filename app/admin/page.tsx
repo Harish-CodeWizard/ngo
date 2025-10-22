@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 // More specific icons for a professional dashboard
-import { LayoutDashboard, Users, Settings, LifeBuoy, DollarSign, Calendar, Download, Search, MoreHorizontal, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Users, DollarSign, Calendar, Download, Search, MoreHorizontal, TrendingUp } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
@@ -68,16 +68,6 @@ const Sidebar = () => (
       </a>
       {/* Add more nav items here */}
     </nav>
-    <div className="px-4 py-6 border-t border-gray-700 space-y-2">
-       <a href="#" className="flex items-center px-4 py-2.5 hover:bg-gray-700 rounded-lg">
-        <Settings className="h-5 w-5" />
-        <span className="ml-4">Settings</span>
-      </a>
-       <a href="#" className="flex items-center px-4 py-2.5 hover:bg-gray-700 rounded-lg">
-        <LifeBuoy className="h-5 w-5" />
-        <span className="ml-4">Support</span>
-      </a>
-    </div>
   </aside>
 );
 
@@ -134,7 +124,15 @@ export default function AdminPage() {
   const summaryStats = useMemo(() => {
     const totalDonationAmount = donations.reduce((sum, d) => sum + d.amount, 0);
     const monthlyTotal = filteredDonations.reduce((sum, d) => sum + d.amount, 0);
-    const totalDonorCount = new Set(donations.map(d => d.email || d.donor.toLowerCase())).size;
+
+    // Calculate unique donors using the same logic as donors page
+    const donorMap: Record<string, boolean> = {};
+    donations.forEach(donation => {
+      const key = donation.email || donation.donor.toLowerCase();
+      donorMap[key] = true;
+    });
+    const totalDonorCount = Object.keys(donorMap).length;
+
     const filteredDonorCount = filteredDonations.length;
     return { totalDonationAmount, monthlyTotal, totalDonorCount, filteredDonorCount };
   }, [donations, filteredDonations]);

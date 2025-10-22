@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 // Icons for a polished UI
-import { LayoutDashboard, Users, Settings, LifeBuoy, DollarSign, TrendingUp, UserCheck, Search, ArrowRight, Star } from 'lucide-react';
+import { LayoutDashboard, Users, DollarSign, TrendingUp, UserCheck, Search, ArrowRight, Star } from 'lucide-react';
 
 interface Donation {
   id: number;
@@ -54,16 +54,6 @@ const Sidebar = () => (
         <span className="ml-4">Donors</span>
       </a>
     </nav>
-    <div className="px-4 py-6 border-t border-gray-700 space-y-2">
-       <a href="#" className="flex items-center px-4 py-2.5 hover:bg-gray-700 rounded-lg">
-        <Settings className="h-5 w-5" />
-        <span className="ml-4">Settings</span>
-      </a>
-       <a href="#" className="flex items-center px-4 py-2.5 hover:bg-gray-700 rounded-lg">
-        <LifeBuoy className="h-5 w-5" />
-        <span className="ml-4">Support</span>
-      </a>
-    </div>
   </aside>
 );
 
