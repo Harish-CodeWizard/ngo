@@ -18,11 +18,6 @@ import {
   TrendingUp,
   GraduationCap,
   MapPin,
-  ContainerIcon as ResponsiveContainer,
-  XIcon as XAxis,
-  Axis3dIcon as YAxis,
-  StarIcon as Legend,
-  InfoIcon as Tooltip,
 } from "lucide-react" // Added missing imports
 import {
   PieChart,
@@ -32,6 +27,11 @@ import {
   BarChart,
   Bar as RechartsBar,
   Cell as RechartsCell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts"
 
 const impactMetrics = [

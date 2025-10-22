@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react"
 import Navigation from "@/components/navigation"
 import Footer from "@/components/footer"
-import { AnimatedCounter } from "@/components/animated-counter"
-import { ParallaxSection } from "@/components/parallax-section"
 import kuviyalImage from "./components/images/kuviyal-image.jpg"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -12,6 +10,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
 import {
   Heart,
   Users,
@@ -31,9 +32,6 @@ import {
   Shield,
   Target,
 } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Badge } from "@/components/ui/badge"
 
 // Animation hook for counters
 function useCounter(end: number, duration = 2000) {
@@ -82,6 +80,7 @@ const testimonials = [
     text: "Kuviyal Foundation has transformed our village. Our children now have access to quality education and our women are empowered with skills.",
     rating: 5,
     image: "/placeholder.svg?height=80&width=80",
+    location: "Odisha",
   },
   {
     name: "Raman Oraon",
@@ -89,6 +88,7 @@ const testimonials = [
     text: "The sustainable farming techniques taught by Kuviyal have doubled our harvest. We are no longer dependent on middlemen.",
     rating: 5,
     image: "/placeholder.svg?height=80&width=80",
+    location: "Jharkhand",
   },
   {
     name: "Kamala Kondh",
@@ -96,6 +96,7 @@ const testimonials = [
     text: "Through Kuviyal's microfinance program, I started my own weaving business. Today, I employ 10 other women from my community.",
     rating: 5,
     image: "/placeholder.svg?height=80&width=80",
+    location: "Odisha",
   },
 ]
 
@@ -315,19 +316,19 @@ export default function HomePage() {
               {/* Quick Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
                 <div className="bg-white/20 backdrop-blur-sm p-6 rounded-2xl">
-                  <AnimatedCounter end={3000} suffix="+" className="text-3xl font-bold serif-title mb-2" />
+                  <div className="text-3xl font-bold serif-title mb-2">{familiesReached}</div>
                   <p className="sans-body text-sm opacity-90">Families Reached</p>
                 </div>
                 <div className="bg-white/20 backdrop-blur-sm p-6 rounded-2xl">
-                  <AnimatedCounter end={150} suffix="+" className="text-3xl font-bold serif-title mb-2" />
+                  <div className="text-3xl font-bold serif-title mb-2">{villagesImpacted}</div>
                   <p className="sans-body text-sm opacity-90">Villages Impacted</p>
                 </div>
                 <div className="bg-white/20 backdrop-blur-sm p-6 rounded-2xl">
-                  <AnimatedCounter end={500} suffix="+" className="text-3xl font-bold serif-title mb-2" />
+                  <div className="text-3xl font-bold serif-title mb-2">{volunteersActive}</div>
                   <p className="sans-body text-sm opacity-90">Active Volunteers</p>
                 </div>
                 <div className="bg-white/20 backdrop-blur-sm p-6 rounded-2xl">
-                  <AnimatedCounter end={75} suffix="+" className="text-3xl font-bold serif-title mb-2" />
+                  <div className="text-3xl font-bold serif-title mb-2">{projectsCompleted}</div>
                   <p className="sans-body text-sm opacity-90">Projects Completed</p>
                 </div>
               </div>
@@ -364,23 +365,21 @@ export default function HomePage() {
       </section>
 
       {/* Core Mission Statement */}
-      <ParallaxSection speed={0.3}>
-        <section className="py-20 bg-gradient-to-r from-blue-50 to-purple-50">
-          <div className="container mx-auto px-4 text-center">
-            <div className="max-w-4xl mx-auto">
-              <Quote className="w-16 h-16 text-yellow-500 mx-auto mb-8" />
-              <h2 className="serif-title text-4xl md:text-6xl font-bold text-gray-800 mb-8 leading-tight">
-                "Voicing the untold stories of the tribes…"
-              </h2>
-              <p className="sans-body text-xl md:text-2xl text-gray-600 leading-relaxed">
-                We believe every tribal community has a story worth telling, a culture worth preserving, and a future
-                worth building. Through sustainable development, education, healthcare, and economic empowerment, we
-                bridge the gap between tradition and progress.
-              </p>
-            </div>
+      <section className="py-20 bg-gradient-to-r from-blue-50 to-purple-50">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto">
+            <Quote className="w-16 h-16 text-yellow-500 mx-auto mb-8" />
+            <h2 className="serif-title text-4xl md:text-6xl font-bold text-gray-800 mb-8 leading-tight">
+              "Voicing the untold stories of the tribes…"
+            </h2>
+            <p className="sans-body text-xl md:text-2xl text-gray-600 leading-relaxed">
+              We believe every tribal community has a story worth telling, a culture worth preserving, and a future
+              worth building. Through sustainable development, education, healthcare, and economic empowerment, we
+              bridge the gap between tradition and progress.
+            </p>
           </div>
-        </section>
-      </ParallaxSection>
+        </div>
+      </section>
 
       {/* Impact Statistics */}
       <section className="py-20 bg-white">
@@ -395,11 +394,7 @@ export default function HomePage() {
               <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Users className="w-12 h-12 text-white" />
               </div>
-              <AnimatedCounter
-                end={3000}
-                suffix="+"
-                className="text-4xl md:text-5xl font-bold serif-title text-yellow-600 mb-2"
-              />
+              <div className="text-4xl md:text-5xl font-bold serif-title text-yellow-600 mb-2">3000+</div>
               <p className="sans-body text-gray-600 font-medium">Families Reached</p>
               <p className="sans-body text-sm text-gray-500 mt-1">Across 4 states</p>
             </div>
@@ -408,11 +403,7 @@ export default function HomePage() {
               <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                 <MapPin className="w-12 h-12 text-white" />
               </div>
-              <AnimatedCounter
-                end={150}
-                suffix="+"
-                className="text-4xl md:text-5xl font-bold serif-title text-purple-600 mb-2"
-              />
+              <div className="text-4xl md:text-5xl font-bold serif-title text-purple-600 mb-2">150+</div>
               <p className="sans-body text-gray-600 font-medium">Villages Impacted</p>
               <p className="sans-body text-sm text-gray-500 mt-1">Remote tribal areas</p>
             </div>
@@ -421,11 +412,7 @@ export default function HomePage() {
               <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Heart className="w-12 h-12 text-white" />
               </div>
-              <AnimatedCounter
-                end={500}
-                suffix="+"
-                className="text-4xl md:text-5xl font-bold serif-title text-blue-600 mb-2"
-              />
+              <div className="text-4xl md:text-5xl font-bold serif-title text-blue-600 mb-2">500+</div>
               <p className="sans-body text-gray-600 font-medium">Active Volunteers</p>
               <p className="sans-body text-sm text-gray-500 mt-1">Dedicated changemakers</p>
             </div>
@@ -434,11 +421,7 @@ export default function HomePage() {
               <div className="w-24 h-24 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Award className="w-12 h-12 text-white" />
               </div>
-              <AnimatedCounter
-                end={75}
-                suffix="+"
-                className="text-4xl md:text-5xl font-bold serif-title text-orange-600 mb-2"
-              />
+              <div className="text-4xl md:text-5xl font-bold serif-title text-orange-600 mb-2">75+</div>
               <p className="sans-body text-gray-600 font-medium">Projects Completed</p>
               <p className="sans-body text-sm text-gray-500 mt-1">Sustainable impact</p>
             </div>
@@ -449,26 +432,21 @@ export default function HomePage() {
             <div className="text-center">
               <div className="flex items-center justify-center mb-4">
                 <TrendingUp className="w-8 h-8 text-green-600 mr-2" />
-                <AnimatedCounter end={95} suffix="%" className="text-3xl font-bold serif-title text-green-600" />
+                <div className="text-3xl font-bold serif-title text-green-600">95%</div>
               </div>
               <p className="sans-body text-gray-600 font-medium">Program Success Rate</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-4">
                 <Shield className="w-8 h-8 text-blue-600 mr-2" />
-                <AnimatedCounter
-                  end={50}
-                  prefix="₹"
-                  suffix="L+"
-                  className="text-3xl font-bold serif-title text-blue-600"
-                />
+                <div className="text-3xl font-bold serif-title text-blue-600">₹50L+</div>
               </div>
               <p className="sans-body text-gray-600 font-medium">Funds Raised</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-4">
                 <Target className="w-8 h-8 text-purple-600 mr-2" />
-                <AnimatedCounter end={98} suffix="%" className="text-3xl font-bold serif-title text-purple-600" />
+                <div className="text-3xl font-bold serif-title text-purple-600">98%</div>
               </div>
               <p className="sans-body text-gray-600 font-medium">Community Satisfaction</p>
             </div>
@@ -477,15 +455,14 @@ export default function HomePage() {
       </section>
 
       {/* Featured Causes */}
-      <ParallaxSection speed={0.2}>
-        <section className="py-20 watercolor-bg">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="serif-title text-4xl md:text-5xl font-bold text-gray-800 mb-4">Featured Causes</h2>
-              <p className="sans-body text-xl text-gray-600 max-w-2xl mx-auto">
-                Support our ongoing initiatives that are creating lasting change in tribal communities
-              </p>
-            </div>
+      <section className="py-20 watercolor-bg">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="serif-title text-4xl md:text-5xl font-bold text-gray-800 mb-4">Featured Causes</h2>
+            <p className="sans-body text-xl text-gray-600 max-w-2xl mx-auto">
+              Support our ongoing initiatives that are creating lasting change in tribal communities
+            </p>
+          </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {featuredCauses.map((cause, index) => (
@@ -567,7 +544,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-      </ParallaxSection>
 
       {/* Testimonials Carousel */}
       <section className="py-20 bg-gradient-to-r from-orange-50 to-yellow-50">
